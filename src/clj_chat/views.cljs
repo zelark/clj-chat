@@ -10,7 +10,7 @@
 
 
 (defn- me? [username]
-  (= username (:username @db/user)))
+  (= username (:username @db/fb-user)))
 
 
 (defn- local-date [date-str]
@@ -40,35 +40,35 @@
 
 
 (defn chat []
-  (let [{:keys [username photo-url uid]} @db/user ;; FIXME
-        input (reagent/atom "")]
+  (let [input (reagent/atom "")]
     (fn []
-      [:div.screen
-       [:div.header
-        [:div.header-left]
-        [:div.header-title "Clojure Learning Group"]
-        [:div.header-right
-         [:a {:href (str "#/profile/" username)}
-          [:img.avatar { :src photo-url }]]]]
+      (let [{:keys [username photo-url uid]} @db/fb-user]
+        [:div.screen
+         [:div.header
+          [:div.header-left]
+          [:div.header-title "Clojure Learning Group"]
+          [:div.header-right
+           [:a {:href (str "#/profile/" username)}
+            [:img.avatar { :src photo-url }]]]]
 
-       [:div.content
-        (when (:background-url @db/app-db)
-          {:style {:background-image (:background-url @db/app-db)}})
-        (doall
-          (for [[key msg] (:messages @db/app-db)]
-            ^{:key key} [message msg]))]
+         [:div.content
+          (when (:background-url @db/app-db)
+            {:style {:background-image (:background-url @db/app-db)}})
+          (doall
+            (for [[key msg] (:messages @db/app-db)]
+              ^{:key key} [message msg]))]
   
-       [:div.footer
-        [:textarea.input { :value     @input
-                           :on-change #(reset! input (-> % .-target .-value)) }]
-        [:button.button {:on-click #(when (seq @input)
-                                      (fb/post-message (fb/create-db)
-                                                       { :user username
-                                                         :uid  uid
-                                                         :time (.toUTCString (js/Date.))
-                                                         :body (clojure.string/trim @input) } )
-                                      (reset! input ""))}
-                        "Send"]]])))
+         [:div.footer
+          [:textarea.input { :value     @input
+                             :on-change #(reset! input (-> % .-target .-value)) }]
+          [:button.button {:on-click #(when (seq @input)
+                                        (fb/post-message (fb/create-db)
+                                                         { :user username
+                                                           :uid  uid
+                                                           :time (.toUTCString (js/Date.))
+                                                           :body (clojure.string/trim @input) })
+                                        (reset! input ""))}
+                          "Send"]]]))))
 
 
 (defn profile []

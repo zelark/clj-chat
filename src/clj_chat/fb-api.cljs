@@ -76,7 +76,8 @@
   (if firebase-user
     (on-message (create-db) #(swap! db/app-db assoc :messages %))
     (off-message (create-db)))
-  (->> firebase-user get-user (reset! db/user)))
+  ;; init chat
+  (->> firebase-user get-user (reset! db/fb-user)))
 
 
 (defn- auth []
@@ -105,7 +106,7 @@
 (defn upload-file [file]
   (-> (.storage js/firebase)
       (.ref)
-      (.child (str "u/" (:uid @db/user) "/imgs/" (.-name file)))
+      (.child (str "u/" (:uid @db/fb-user) "/imgs/" (.-name file)))
       (.put file)
       (.then #(->> (.. % -metadata -fullPath)
                    js/encodeURIComponent

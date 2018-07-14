@@ -2,11 +2,11 @@
   (:require [reagent.core :as reagent]))
 
 
-;; Keeps info about authenticated user.
-(defonce user (atom {}))
-
-
 (defonce app-db (reagent/atom {}))
+
+
+;; subs
+(def fb-user (reagent/cursor app-db [:firebase :user]))
 
 
 (defn cache-user [github-user]

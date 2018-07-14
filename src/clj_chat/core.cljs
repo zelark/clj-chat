@@ -23,6 +23,6 @@
     #_(reagent/render-component [views/app]
                               (.getElementById js/document "app")))
 
-(reagent/render-component [views/app]
+(reagent/render-component [views/app] ;; FIXME
                               (.getElementById js/document "app"))
 
