@@ -17,6 +17,13 @@
   (.toLocaleString (js/Date. date-str)))
 
 
+(defn- scroll-to-bottom [this]
+  (let [node (reagent/dom-node this)
+        opts (clj->js {:top (.-scrollHeight node)
+                       :behavior :smooth})] 
+    (.scrollBy node opts)))
+
+
 ;; Components
 (defn sign-in []
   [:div.screen.sign-in
@@ -34,7 +41,20 @@
     [:div.message-text body]]])
 
 
-;; TODO: add auto-scrolling to content
+(defn messages-list []
+  (reagent/create-class
+    {:display-name "messages-list"
+     :component-did-mount scroll-to-bottom
+     :component-did-update scroll-to-bottom
+     :reagent-render (fn []
+                       [:div.content
+                        (when (some? @db/bg-url)
+                          {:style {:background-image @db/bg-url}})
+                        (doall
+                          (for [[key msg] (sort (:messages @db/app-db))]
+                            ^{:key key} [message msg]))])}))
+
+
 (defn chat []
   (let [input (reagent/atom "")]
     (fn []
@@ -46,14 +66,7 @@
           [:div.header-right
            [:a {:href (str "#/profile/" username)}
             [:img.avatar {:src photo-url}]]]]
-
-         [:div.content
-          (when (some? @db/bg-url)
-            { :style { :background-image @db/bg-url }})
-          (doall
-            (for [[key msg] (sort (:messages @db/app-db))]
-              ^{:key key} [message msg]))]
-  
+         [messages-list]
          [:div.footer
           [:textarea.input {:value @input
                             :on-change #(reset! input (-> % .-target .-value))}]
