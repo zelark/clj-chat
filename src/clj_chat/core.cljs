@@ -1,8 +1,8 @@
 (ns clj-chat.core
-  (:require [reagent.core :as reagent]
+  (:require [clj-chat.fb-api :as fb]
+            [reagent.core :as reagent]
             [clj-chat.views :as views]
-            [devtools.core :as devtools]
-            [clj-chat.fb-api :as fb]))
+            [devtools.core :as devtools]))
 
 
 (devtools/install!)
@@ -11,13 +11,12 @@
 
 ;; ENTRY POINT
 (defn ^:export run []         ;; Why figwheel does not call it?
-  (let [firebase-app-config { :apiKey            "AIzaSyCEhmVGg3qnpqSnPwAFpCHdRqwsR5abkhU"
-                              :authDomain        "clj-chat.firebaseapp.com"
-                              :databaseURL       "https://clj-chat.firebaseio.com"
-                              :projectId         "clj-chat"
-                              :storageBucket     "clj-chat.appspot.com"
-                              :messagingSenderId "293369282958" }]
-    (fb/load-bg-url)
+  (let [firebase-app-config {:apiKey            "AIzaSyCEhmVGg3qnpqSnPwAFpCHdRqwsR5abkhU"
+                             :authDomain        "clj-chat.firebaseapp.com"
+                             :databaseURL       "https://clj-chat.firebaseio.com"
+                             :projectId         "clj-chat"
+                             :storageBucket     "clj-chat.appspot.com"
+                             :messagingSenderId "293369282958"}]
     (println "init app...")
     (fb/init-app firebase-app-config))
     #_(reagent/render-component [views/app]

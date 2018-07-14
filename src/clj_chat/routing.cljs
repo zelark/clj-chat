@@ -4,7 +4,7 @@
             [goog.events :as events]
             [secretary.core :as secretary])
   (:import [goog History]
-           [goog.history EventType Html5History]))
+           [goog.history EventType]))
 
 
 
