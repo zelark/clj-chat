@@ -34,6 +34,7 @@
     [:div.message-text body]]])
 
 
+;; TODO: add auto-scrolling to content
 (defn chat []
   (let [input (reagent/atom "")]
     (fn []
