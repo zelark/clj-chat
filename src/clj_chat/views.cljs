@@ -50,7 +50,7 @@
           (when (some? @db/bg-url)
             { :style { :background-image @db/bg-url }})
           (doall
-            (for [[key msg] (:messages @db/app-db)]
+            (for [[key msg] (sort (:messages @db/app-db))]
               ^{:key key} [message msg]))]
   
          [:div.footer
