@@ -10,12 +10,12 @@
 
 ;; ENTRY POINT
 (defn ^:export run [] ;; Why figwheel does not call it when I change the code?
-  (let [firebase-app-config {:apiKey            "AIzaSyCEhmVGg3qnpqSnPwAFpCHdRqwsR5abkhU"
-                             :authDomain        "clj-chat.firebaseapp.com"
-                             :databaseURL       "https://clj-chat.firebaseio.com"
-                             :projectId         "clj-chat"
-                             :storageBucket     "clj-chat.appspot.com"
-                             :messagingSenderId "293369282958"}]
+  (let [firebase-app-config #js {:apiKey            "AIzaSyCEhmVGg3qnpqSnPwAFpCHdRqwsR5abkhU"
+                                 :authDomain        "clj-chat.firebaseapp.com"
+                                 :databaseURL       "https://clj-chat.firebaseio.com"
+                                 :projectId         "clj-chat"
+                                 :storageBucket     "clj-chat.appspot.com"
+                                 :messagingSenderId "293369282958"}]
     (println "init app...")
     (fb/init-app firebase-app-config))
     (reagent/render-component [views/app]

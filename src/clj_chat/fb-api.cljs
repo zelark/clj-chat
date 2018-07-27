@@ -92,7 +92,7 @@
 
 
 (defn init-app [config]
-  (.initializeApp js/firebase (clj->js config))
+  (.initializeApp js/firebase config)
   (init-auth))
 
 
