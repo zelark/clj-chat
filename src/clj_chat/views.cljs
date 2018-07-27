@@ -9,7 +9,7 @@
 (defn- at [s] (str "@" s))
 
 
-(defn- me? [username]
+(defn- ^boolean me? [username]
   (= username (:username @db/fb-user)))
 
 
@@ -19,8 +19,8 @@
 
 (defn- scroll-to-bottom [this]
   (let [node (reagent/dom-node this)
-        opts (clj->js {:top (.-scrollHeight node)
-                       :behavior :smooth})] 
+        opts #js {:top (.-scrollHeight node)
+                  :behavior "smooth"}]
     (.scrollBy node opts)))
 
 

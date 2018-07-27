@@ -1,5 +1,6 @@
 (ns clj-chat.db
-  (:require [reagent.core :as reagent]))
+  (:require [reagent.core :as reagent]
+            [goog.object :as gobj]))
 
 
 (defonce app-db (reagent/atom {:screen :sign-in}))
@@ -23,10 +24,10 @@
 
 (defn- cache-user [github-user]
   (when github-user
-    (let [user {:username   (.-login github-user)
-                :fullname   (.-name github-user) 
-                :avatar-url (.-avatar_url github-user)
-                :bio        (.-bio github-user)}]
+    (let [user {:username   (gobj/get github-user "login")
+                :fullname   (gobj/get github-user "name")
+                :avatar-url (gobj/get github-user "avatar_url")
+                :bio        (gobj/get github-user "bio")}]
       (swap! app-db assoc-in [:users (:username user)] user))))
 
 
