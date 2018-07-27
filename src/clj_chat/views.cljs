@@ -9,7 +9,7 @@
 (defn- at [s] (str "@" s))
 
 
-(defn- me? [username]
+(defn- ^boolean me? [username]
   (= username (:username @db/fb-user)))
 
 
@@ -19,21 +19,32 @@
 
 (defn- scroll-to-bottom [this]
   (let [node (reagent/dom-node this)
-        opts (clj->js {:top (.-scrollHeight node)
-                       :behavior :smooth})] 
+        opts #js {:top (.-scrollHeight node)
+                  :behavior "smooth"}]
     (.scrollBy node opts)))
 
 
 ;; Components
-(defn sign-in []
-  [:div.screen.sign-in
-   [:button.button {:on-click #(fb/sign-in-with-github)} "Sign In with GitHub"]])
+(defn header [{:keys [left title right]}]
+  [:div.header
+   [:div.header-left left]
+   [:div.header-title title]
+   [:div.header-right right]])
+
+
+(defn avatar [{:keys [src username size]}]
+  (let [on-click-fn (when (some? username)
+                      #(routing/navigate! (str "/profile/" username)))]
+    [:img.avatar
+     {:src src
+      :class (when (some? size) (name size))
+      :on-click on-click-fn}]))
 
 
 (defn message [{:keys [user uid time body]}]
-  [:div {:class (str "message " (if (me? user) "me" "other"))}
-   [:img.avatar {:src (:avatar-url (db/get-user-info user))
-                 :on-click #(routing/navigate! (str "/profile/" user))}]
+  [:div.message {:class (if (me? user) "me" "other")}
+   [avatar {:src (:avatar-url (db/get-user-info user))
+            :username user}]
    [:div.message-buble
     [:div.message-meta
      [:div.message-user (at user)]
@@ -55,17 +66,14 @@
                             ^{:key key} [message msg]))])}))
 
 
+;; Main components
 (defn chat []
   (let [input (reagent/atom "")]
     (fn []
       (let [{:keys [username photo-url uid]} @db/fb-user]
         [:div.screen
-         [:div.header
-          [:div.header-left]
-          [:div.header-title "Clojure Learning Group"]
-          [:div.header-right
-           [:a {:href (str "#/profile/" username)}
-            [:img.avatar {:src photo-url}]]]]
+         [header {:title "Clojure Learning Group"
+                  :right [avatar {:src photo-url :username username}]}]
          [messages-list]
          [:div.footer
           [:textarea.input {:value @input
@@ -85,16 +93,12 @@
   (let [gh-user (db/get-user-info (:selected-user @db/app-db))
         {:keys [username fullname avatar-url bio]} gh-user]
     [:div.screen.profile
-     [:div.header
-      [:div.header-left
-       [:small
-        [:a {:href "#/chat"} "back to chat"]]]
-      [:div.header-title (at username)]
-      [:div.header-right]]
+     [header {:title (at username)
+              :left  [:small [:a {:href "#/chat"} "back to chat"]]}]
      [:div.content
       (when (some? @db/bg-url)
         { :style { :background-image @db/bg-url }})
-      [:img.avatar.avatar-xl {:src avatar-url}]
+      [avatar {:src avatar-url :size :avatar-xl}]
       [:div.profile-info
        [:div.username (at username)]
        [:div.full-name fullname]
@@ -114,6 +118,11 @@
           {:on-click #(-> (.getElementById js/document "background-image") .click)}
           "Upload background"]
          [:button.button {:on-click #(fb/sign-out)} "sign out"]])]]))
+
+
+(defn sign-in []
+  [:div.screen.sign-in
+   [:button.button {:on-click #(fb/sign-in-with-github)} "Sign In with GitHub"]])
 
 
 (defn app []
