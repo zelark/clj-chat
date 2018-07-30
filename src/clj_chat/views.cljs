@@ -126,7 +126,7 @@
                                                    (fb/upload-file file (:uid @db/fb-user)))
                                                  (set! (.-value target) ""))}]
 
-         [:button.button
+         [:button.button ;; http://jsfiddle.net/dhyzV/1556/
           {:on-click #(-> (.getElementById js/document "background-image") .click)}
           "Upload background"]
          [:button.button {:on-click #(fb/sign-out)} "sign out"]])]]))
