@@ -1,6 +1,6 @@
 (ns clj-chat.fb-api
   (:require [clj-chat.db :as db]
-            [clj-chat.routing :as routing]
+            [accountant.core :as accountant]
             [firebase.app :as firebase-app]
             [firebase.auth :as firebase-auth]
             [firebase.database :as firebase-database]
@@ -73,13 +73,11 @@
       (reset! db/firebase-db (create-db))
       (load-bg-url)
       (on-message @db/firebase-db #(swap! db/app-db assoc :messages %))
-      (routing/navigate! "/chat")
     )
     (do
       (when (some? @db/firebase-db)
         (off-message @db/firebase-db))
-      (reset! db/app-db {:screen :sign-in})
-      (routing/navigate! "/sign-in")
+      (accountant/navigate! "/")
     )))
 
 
@@ -99,7 +97,8 @@
 (defn sign-in-with-github []
   (-> (.signInWithPopup (auth) (new js/firebase.auth.GithubAuthProvider))
       (.then #(->> (.. % -additionalUserInfo -username)
-                   (db/ls-set :github-username)))))
+                   (db/ls-set :github-username)))
+      (.then (accountant/navigate! "/chat"))))
 
 
 (defn sign-out []

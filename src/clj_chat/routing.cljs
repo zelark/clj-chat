@@ -1,29 +1,27 @@
 (ns clj-chat.routing
-  (:require-macros [secretary.core :refer [defroute]])
   (:require [clj-chat.db :as db]
-            [goog.events :as events]
-            [secretary.core :as secretary])
-  (:import [goog History]
-           [goog.history EventType]))
+            [bidi.bidi :as bidi]
+            [accountant.core :as accountant]))
 
 
-
-(defroute "/" []
-  (swap! db/app-db assoc :screen :sign-in))
-
-(defroute "/profile/:username" [username]
-  (swap! db/app-db assoc :screen :profile :selected-user username))
-  
-(defroute "/:state" [state]
-  (swap! db/app-db assoc :screen (keyword state)))
+(def app-routes
+  ["/" {""                     :sign-in
+        "chat"                 :chat
+        ["profile/" :username] :profile
+        true                   :nothing}])
 
 
-(def history
-  (doto (History.)
-    (events/listen EventType.NAVIGATE
-                   #(secretary/dispatch! (.-token %)))
-    (.setEnabled true)))
+(defn path-for [handler]
+  (bidi/path-for app-routes handler))
 
 
-(defn navigate! [token]
-   (.setToken history token))
+(defn init! []
+  (accountant/configure-navigation!
+    {:nav-handler (fn [path]
+                    (let [match (bidi/match-route app-routes path)
+                          screen (:handler match)
+                          params (:route-params match)]
+                      (swap! db/app-db assoc :route {:screen screen :params params})))
+    :path-exists? (fn [path]
+                    (boolean (bidi/match-route app-routes path)))})
+  (accountant/dispatch-current!))

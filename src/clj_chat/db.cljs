@@ -3,7 +3,7 @@
             [goog.object :as gobj]))
 
 
-(defonce app-db (reagent/atom {:screen :sign-in}))
+(defonce app-db (reagent/atom {}))
 
 
 ;; subs
@@ -12,6 +12,8 @@
 (def firebase-db (reagent/cursor app-db [:firebase :db]))
 
 (def bg-url (reagent/cursor app-db [:background-url]))
+
+(def route (reagent/cursor app-db [:route]))
 
 
 (defn ls-set [k v]

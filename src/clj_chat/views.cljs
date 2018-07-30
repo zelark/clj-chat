@@ -2,8 +2,8 @@
   (:require [clj-chat.db :as db]
             [clj-chat.fb-api :as fb]
             [reagent.core :as reagent]
-            [secretary.core :as secretary]
-            [clj-chat.routing :as routing]))
+            [clj-chat.routing :as routing]
+            [accountant.core :as accountant]))
 
 
 (defn- at [s] (str "@" s))
@@ -34,7 +34,7 @@
 
 (defn avatar [{:keys [src username size]}]
   (let [on-click-fn (when (some? username)
-                      #(routing/navigate! (str "/profile/" username)))]
+                      #(accountant/navigate! (str "/profile/" username)))]
     [:img.avatar
      {:src src
       :class (when (some? size) (name size))
@@ -66,8 +66,20 @@
                             ^{:key key} [message msg]))])}))
 
 
+(defn back-to-chat []
+  [:small [:a {:href (routing/path-for :chat)} "back to chat"]])
+
+
 ;; Main components
-(defn chat []
+(defmulti screen identity)
+
+
+(defmethod screen :sign-in []
+  [:div.screen.sign-in
+   [:button.button {:on-click #(fb/sign-in-with-github)} "Sign In with GitHub"]])
+
+
+(defmethod screen :chat []
   (let [input (reagent/atom "")]
     (fn []
       (let [{:keys [username photo-url uid]} @db/fb-user]
@@ -89,12 +101,12 @@
            "Send"]]]))))
 
 
-(defn profile []
-  (let [gh-user (db/get-user-info (:selected-user @db/app-db))
-        {:keys [username fullname avatar-url bio]} gh-user]
+(defmethod screen :profile []
+  (let [username (get-in @db/route [:params :username])
+        {:keys [username fullname avatar-url bio]} (db/get-user-info username)]
     [:div.screen.profile
      [header {:title (at username)
-              :left  [:small [:a {:href "#/chat"} "back to chat"]]}]
+              :left  [back-to-chat]}]
      [:div.content
       (when (some? @db/bg-url)
         { :style { :background-image @db/bg-url }})
@@ -120,13 +132,15 @@
          [:button.button {:on-click #(fb/sign-out)} "sign out"]])]]))
 
 
-(defn sign-in []
-  [:div.screen.sign-in
-   [:button.button {:on-click #(fb/sign-in-with-github)} "Sign In with GitHub"]])
+(defmethod screen :nothing []
+  [:div.screen
+   [header {:title "Nothing is here!"
+            :left  [back-to-chat]}]
+   [:div.content
+    (when (some? @db/bg-url)
+         { :style { :background-image @db/bg-url }})]])
 
 
 (defn app []
-  (case (:screen @db/app-db)
-    :sign-in [sign-in]
-    :chat    [chat]
-    :profile [profile]))
+  (let [key (:screen @db/route)]
+    ^{:key key} [screen key]))
