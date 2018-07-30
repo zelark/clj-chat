@@ -17,11 +17,18 @@
   (.toLocaleString (js/Date. date-str)))
 
 
-(defn- scroll-to-bottom [this]
+(defn- scroll-to-bottom [behavior this]
   (let [node (reagent/dom-node this)
-        opts #js {:top (.-scrollHeight node)
-                  :behavior "smooth"}]
+        scroll-top (or (:scroll-top @db/app-db)
+                       (.-scrollHeight node))
+        opts #js {:top scroll-top :behavior behavior}]
     (.scrollBy node opts)))
+
+
+(defn- keep-scroll-position [this]
+  (let [node (reagent/dom-node this)
+        scroll-top (.-scrollTop node)]
+    (swap! db/app-db assoc :scroll-top scroll-top)))
 
 
 ;; Components
@@ -55,8 +62,9 @@
 (defn messages-list []
   (reagent/create-class
     {:display-name "messages-list"
-     :component-did-mount scroll-to-bottom
-     :component-did-update scroll-to-bottom
+     :component-did-mount (partial scroll-to-bottom "instant")
+     :component-did-update (partial scroll-to-bottom "smooth")
+     :component-will-unmount keep-scroll-position
      :reagent-render (fn []
                        [:div.content
                         (when (some? @db/bg-url)
