@@ -11,6 +11,7 @@
   :dependencies [[org.clojure/clojure "1.9.0"]
                  [org.clojure/clojurescript "1.10.238"]
                  [reagent "0.7.0"]
+                 [re-frame "0.10.5"]
                  [bidi "2.1.3" :exclusions [ring/ring-core prismatic/schema]]
                  [venantius/accountant "0.2.4"]
                  [cljsjs/firebase "5.0.4-1"]]
