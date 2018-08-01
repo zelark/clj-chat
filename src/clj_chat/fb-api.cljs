@@ -98,7 +98,7 @@
   (-> (.signInWithPopup (auth) (new js/firebase.auth.GithubAuthProvider))
       (.then #(->> (.. % -additionalUserInfo -username)
                    (db/ls-set :github-username)))
-      (.then (accountant/navigate! "/chat"))))
+      (.then (accountant/navigate! "/chat/clj-group"))))
 
 
 (defn sign-out []

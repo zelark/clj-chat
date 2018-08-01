@@ -6,13 +6,13 @@
 
 (def app-routes
   ["/" {""                     :sign-in
-        "chat"                 :chat
+        ["chat/" :chatname]    :chat
         ["profile/" :username] :profile
         true                   :nothing}])
 
 
-(defn path-for [handler]
-  (bidi/path-for app-routes handler))
+(defn path-for [& args]
+  (apply bidi/path-for app-routes args))
 
 
 (defn init! []

@@ -75,21 +75,18 @@
 
 
 (defn back-to-chat []
-  [:small [:a {:href (routing/path-for :chat)} "back to chat"]])
+  [:small [:a {:href (routing/path-for :chat :chatname "clj-chat")} "back to chat"]]) ;; FIXME
 
 
 ;; Main components
-(defmulti screen identity)
-
-
-(defmethod screen :sign-in []
+(defn sign-in []
   [:div.screen.sign-in
    [:button.button {:on-click #(fb/sign-in-with-github)} "Sign In with GitHub"]])
 
 
-(defmethod screen :chat []
+(defn chat [_]
   (let [input (reagent/atom "")]
-    (fn []
+    (fn [{:keys [chatname]}]
       (let [{:keys [username photo-url uid]} @db/fb-user]
         [:div.screen
          [header {:title "Clojure Learning Group"
@@ -109,9 +106,9 @@
            "Send"]]]))))
 
 
-(defmethod screen :profile []
-  (let [username (get-in @db/route [:params :username])
-        {:keys [username fullname avatar-url bio]} (db/get-user-info username)]
+(defn profile [{:keys [username]}]
+  (let [user (db/get-user-info username)
+        {:keys [username fullname avatar-url bio]} user]
     [:div.screen.profile
      [header {:title (at username)
               :left  [back-to-chat]}]
@@ -140,7 +137,7 @@
          [:button.button {:on-click #(fb/sign-out)} "sign out"]])]]))
 
 
-(defmethod screen :nothing []
+(defn nothing []
   [:div.screen
    [header {:title "Nothing is here!"
             :left  [back-to-chat]}]
@@ -150,5 +147,9 @@
 
 
 (defn app []
-  (let [key (:screen @db/route)]
-    ^{:key key} [screen key]))
+  (let [{:keys [screen params]} @db/route]
+    (case screen
+      :sign-in [sign-in]
+      :chat    [chat params]
+      :profile [profile params]
+      [nothing])))
