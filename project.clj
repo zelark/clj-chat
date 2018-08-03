@@ -1,10 +1,9 @@
 (defproject clj-chat "0.1.0-SNAPSHOT"
-  :description "FIXME: write this!"
-  :url "http://example.com/FIXME"
+  :description "Simple chat based on firebase and re-frame"
+  :url "https://github.com/zelark/clj-chat"
   :license {:name "Eclipse Public License"
             :url "http://www.eclipse.org/legal/epl-v10.html"}
 
-  
   
   :min-lein-version "2.7.1"
 

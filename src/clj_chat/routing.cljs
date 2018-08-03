@@ -1,10 +1,10 @@
 (ns clj-chat.routing
-  (:require [clj-chat.db :as db]
-            [bidi.bidi :as bidi]
+  (:require [bidi.bidi :as bidi]
+            [clj-chat.events :as evns]
             [accountant.core :as accountant]))
 
 
-(def app-routes
+(def routes
   ["/" {""                     :sign-in
         ["chat/" :chatname]    :chat
         ["profile/" :username] :profile
@@ -12,16 +12,16 @@
 
 
 (defn path-for [& args]
-  (apply bidi/path-for app-routes args))
+  (apply bidi/path-for routes args))
 
 
 (defn init! []
   (accountant/configure-navigation!
     {:nav-handler (fn [path]
-                    (let [match (bidi/match-route app-routes path)
-                          screen (:handler match)
-                          params (:route-params match)]
-                      (swap! db/app-db assoc :route {:screen screen :params params})))
+                    (let [match (bidi/match-route routes path)
+                          route {:screen (:handler match)
+                                 :params (:route-params match)}]
+                      (evns/fire [::evns/set-route route])))
     :path-exists? (fn [path]
-                    (boolean (bidi/match-route app-routes path)))})
+                    (boolean (bidi/match-route routes path)))})
   (accountant/dispatch-current!))

@@ -1,11 +1,24 @@
 (ns clj-chat.core
-  (:require [clj-chat.fb-api :as fb]
+  (:require [clj-chat.routing]
+            [clj-chat.subs :as subs]
             [reagent.core :as reagent]
             [clj-chat.views :as views]
-            [clj-chat.routing]))
+            [clj-chat.events :as evns]
+            [clj-chat.firebase :as firebase]))
 
 
 (enable-console-print!)
+
+
+;; Every time when auth state changes, this fn is called.
+;; See firebase/init-app below.
+(defn auth-changed [firebase-user]
+  (when (some? firebase-user)
+    (let [user {:uid       (.-uid firebase-user)
+                :fullname  (.-displayName firebase-user)
+                :photo-url (.-photoURL firebase-user)
+                :email     (.-email firebase-user)}]
+    (evns/fire [::evns/set-user user]))))
 
 
 (defn on-js-reload []
@@ -15,13 +28,11 @@
 
 ;; ENTRY POINT
 (defn ^:export run []
-  (let [firebase-app-config #js {:apiKey            "AIzaSyCEhmVGg3qnpqSnPwAFpCHdRqwsR5abkhU"
-                                 :authDomain        "clj-chat.firebaseapp.com"
-                                 :databaseURL       "https://clj-chat.firebaseio.com"
-                                 :projectId         "clj-chat"
-                                 :storageBucket     "clj-chat.appspot.com"
-                                 :messagingSenderId "293369282958"}]
+  ;; First of all, we are initializing app-db by db/default-db
+  ;; which contains firebase app's settings.
+  (evns/fire-sync [::evns/initialize-db])
+  (let [app-config (subs/<sub [::subs/app-config])]
     (println "init app...")
-    (fb/init-app firebase-app-config))
-    (clj-chat.routing/init!)
-    (on-js-reload))
+    (firebase/init-app app-config auth-changed))
+  (clj-chat.routing/init!)
+  (on-js-reload))
